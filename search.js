@@ -82,5 +82,5 @@ async function search(query) {
     }
 }
 
-// main();
+// search("anime");
 module.exports = search;

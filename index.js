@@ -11,4 +11,4 @@ async function upload(pdfPath) {
 }
 
 // upload('vector.pdf');
-// search('your-query');
+search('anime');

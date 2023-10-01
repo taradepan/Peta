@@ -18,18 +18,15 @@ const csvWriter = createObjectCsvWriter({
 // Process the text, create embeddings, and write to CSV
 async function processAndSaveContentsAndEmbeddings() {
   const records = [];
-  const id = generateUniqueId(); // You can implement your own unique ID generation logic.
+  const id = generateUniqueId(); 
   const embedding = await createEmbedding(text);
-  records.push({ id, text, embedding }); // Store embedding as a numerical array
+  records.push({ id, text, embedding }); 
 
   csvWriter.writeRecords(records)
     .then(() => console.log('Contents and Embeddings CSV file has been written successfully'));
 }
 
-// Function to generate a unique ID (You can implement your own logic here)
 function generateUniqueId() {
-  // Implement your unique ID generation logic here
-  // For example, you can use a timestamp or a random number
   return Date.now().toString();
 }
 
