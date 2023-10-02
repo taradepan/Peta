@@ -73,7 +73,7 @@ async function search(query) {
     
     try {
         const embedding = await getEmbedding(query);
-        console.log(embedding);
+        // console.log(embedding);
         const documents = await findSimilarDocuments(embedding);
         const output = await gpt(documents[0].Content);
         
