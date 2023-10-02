@@ -3,7 +3,7 @@ const { createObjectCsvWriter } = require('csv-writer');
 const { createEmbedding } = require('./embed.js');
 
 
-const text = fs.readFileSync('text.txt', 'utf-8');
+const content = fs.readFileSync('text.txt', 'utf-8');
 
 // Create a CSV writer
 const csvWriter = createObjectCsvWriter({
@@ -19,8 +19,8 @@ const csvWriter = createObjectCsvWriter({
 async function processAndSaveContentsAndEmbeddings() {
   const records = [];
   const id = generateUniqueId(); 
-  const embedding = await createEmbedding(text);
-  records.push({ id, text, embedding }); 
+  const embedding = await createEmbedding(content);
+  records.push({ id, content, embedding }); 
 
   csvWriter.writeRecords(records)
     .then(() => console.log('Contents and Embeddings CSV file has been written successfully'));

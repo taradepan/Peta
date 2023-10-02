@@ -10,5 +10,5 @@ async function upload(pdfPath) {
     connectAndInsertData()
 }
 
-// upload('vector.pdf');
-search('anime');
+upload('vector.pdf');
+// search('anime');
