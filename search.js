@@ -4,7 +4,7 @@ const dotenv = require('dotenv');
 dotenv.config();
 const axios = require('axios');
 const uri = process.env.MONGODB;
-
+const gpt = require('./GPT.js');
 
 const client = new MongoClient(uri, {
     serverApi: {
@@ -75,12 +75,13 @@ async function search(query) {
         const embedding = await getEmbedding(query);
         console.log(embedding);
         const documents = await findSimilarDocuments(embedding);
+        const output = await gpt(documents[0].Content);
         
-        console.log(documents);
+        console.log(output);
     } catch(err) {
         console.error(err);
     }
 }
 
-// search("anime");
+search("vector");
 module.exports = search;

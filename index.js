@@ -5,10 +5,10 @@ const connectAndInsertData = require('./upload.js');
 const search = require('./search.js');
 
 async function upload(pdfPath) {
-    processPDFTextAndWriteToFile(pdfPath);
-    processAndSaveContentsAndEmbeddings();
+    processPDFTextAndWriteToFile(pdfPath).then(() => console.log('PDF file processing complete'));
+    await processAndSaveContentsAndEmbeddings();
     connectAndInsertData()
 }
 
-upload('vector.pdf');
-// search('anime');
+// upload('anime.pdf');
+search('anime');
