@@ -1,24 +1,32 @@
-const OpenAI = require("openai");
-const dotenv = require('dotenv');
-dotenv.config();
+import { OpenAI } from "langchain/llms/openai";
+import { PromptTemplate } from "langchain/prompts";
+import { LLMChain } from "langchain/chains";
+import dotenv from 'dotenv';
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+dotenv.config(); 
 
-async function gpt(input) {
-  const prompt = `
-  You will be provided with a document delimited by triple quotes. Your task is to fix the spacing between each word using only the provided document and to cite the complete document. Use the following format for to cite relevant document ({"content": …}).
-  """'${input}'"""
-  `;
-  
-  const completion = await openai.completions.create({
-    model: "gpt-3.5-turbo-instruct",
-    prompt,
-    max_tokens: 3000,
-    temperature: 0,
-  });
-
-  const text = completion.choices[0].text;
-  console.log(text);
+if (!process.env.OPENAI_API_KEY) {
+  throw new Error("OpenAI API key not found");
 }
 
-module.exports = gpt;
+
+async function chat(document, question){
+    const model = new OpenAI({ temperature: 0 });
+    const prompt = PromptTemplate.fromTemplate(
+        `
+        your task is to answer the quesions based on given document, if the ques is not relevent to the content provided in the doc respond with "Not Found!!!".
+        Doc:"""'{document}'""".
+        Ques: {question}
+        
+        `
+    );
+        
+    const chain = new LLMChain({ llm: model, prompt });
+
+    const res = await chain.call({
+        document: document,
+        question: question,
+      });
+    return res.text;
+}
+export default chat;

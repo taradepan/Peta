@@ -1,87 +1,66 @@
-const { MongoClient, ServerApiVersion } = require('mongodb');
-const fs = require('fs');
-const dotenv = require('dotenv');
+import { MongoClient, ServerApiVersion } from 'mongodb';
+import dotenv from 'dotenv';
+import { HuggingFaceTransformersEmbeddings } from "langchain/embeddings/hf_transformers";
+
 dotenv.config();
-const axios = require('axios');
 const uri = process.env.MONGODB;
-const gpt = require('./GPT.js');
+const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 
-const client = new MongoClient(uri, {
-    serverApi: {
-        version: ServerApiVersion.v1,
-        strict: false,
-        deprecationErrors: true,
-    }
+const embedding = new HuggingFaceTransformersEmbeddings({
+  modelName: "Xenova/all-MiniLM-L6-v2",
 });
-async function getEmbedding(query) {
-    const url = 'https://api.openai.com/v1/embeddings';
-    const openai_key = process.env.OPENAI_API_KEY; 
-    let response = await axios.post(url, {
-        input: query,
-        model: "text-embedding-ada-002"
-    }, {
-        headers: {
-            'Authorization': `Bearer ${openai_key}`,
-            'Content-Type': 'application/json'
+
+async function findSimilarDocuments(embeddings) {
+  try {
+    await client.connect();
+
+    const db = client.db('newdb');
+    const collection = db.collection('data');
+
+    const documents = await collection.aggregate([
+      {
+        "$search": {
+          "index": "newIdx",
+          "knnBeta": {
+            "vector": embeddings,
+            "path": "embedding",
+            "k": 1
+          }
         }
+      },
+      {
+        "$project": {
+          "_id": 0,
+          "path": 1,
+          "content": 1,
+        }
+      }
+    ]).toArray();
+    const docs = documents.map((doc) => {
+      return {
+        path: doc.path,
+        content: doc.content,
+      };
     });
-    
-    if(response.status === 200) {
-        return response.data.data[0].embedding;
-    } else {
-        throw new Error(`Failed to get embedding. Status code: ${response.status}`);
-    }
-}
-
-
-async function findSimilarDocuments(embedding) {
-    
-    try {
-        await client.connect();
-        
-        const db = client.db('Peta'); 
-        const collection = db.collection('vec');
-        
-
-        const documents = await collection.aggregate([
-            {
-              "$search": {
-                "index": "VecIndex",
-                "knnBeta": {
-                  "vector": embedding,
-                  "path": "Embedding",
-                  "k": 1
-                }
-              }
-            },
-            {
-              "$project": {
-                "_id": 0,
-                "ID": 1,
-                "Content": 1
-              }
-            }
-          ]).toArray();
-        
-        return documents;
-    } finally {
-        await client.close();
-    }
+    return docs;
+  } finally {
+    await client.close();
+  }
 }
 
 async function search(query) {
-    
-    try {
-        const embedding = await getEmbedding(query);
-        // console.log(embedding);
-        const documents = await findSimilarDocuments(embedding);
-        const output = await gpt(documents[0].Content);
-        
-        console.log(output);
-    } catch(err) {
-        console.error(err);
-    }
+  try {
+    const embeddings = await embedding.embedQuery(query);
+    const documents = await findSimilarDocuments(embeddings);
+    return documents;
+  } catch (err) {
+    console.error(err);
+    throw err;
+  }
 }
 
-search("vector");
-module.exports = search;
+// search("google").then((res) => {
+//   console.log(res[0]);
+// });
+
+export default search;

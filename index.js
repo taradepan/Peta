@@ -1,14 +1,15 @@
-const processPDFTextAndWriteToFile = require('./parse.js');
-const processAndSaveContentsAndEmbeddings = require('./dataprocess.js');
-const { createEmbedding } = require('./embed.js');
-const connectAndInsertData = require('./upload.js');
-const search = require('./search.js');
+// import upload from './mongo.js';
+import search from './search.js';
+import chat from './GPT.js';
 
-async function upload(pdfPath) {
-    processPDFTextAndWriteToFile(pdfPath).then(() => console.log('PDF file processing complete'));
-    await processAndSaveContentsAndEmbeddings();
-    connectAndInsertData()
-}
+// upload("drmgr.csv").catch(console.dir);
 
-// upload('anime.pdf');
-search('anime');
+const query = "harsenth email";
+
+const document = search(query);
+console.log(document.then((res) => {
+    console.log(res[0].path);
+    chat(res[0].content, query).then((res) => {
+        console.log(res);
+    })
+}));
