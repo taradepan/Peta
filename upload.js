@@ -57,10 +57,8 @@ async function upload(fpath) {
             }
             for(const chunk of chunks){
                 console.log(chunk);
-                const joinedText = chunk.join(" "); // Join the elements into a single string
+                const joinedText = chunk.join(" "); 
                 const pageEmbedding = await embeddings.embedQuery(joinedText);
-
-                // const pageEmbedding = await embeddings.embedQuery(chunk);
     
                 const result = {
                     path: fpath,
